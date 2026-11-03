@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Pro - Virtual Lab Quiz</title>
+    <link rel="stylesheet" href="css/quiz.css">
+</head>
+
+<body>
+
+    <header class="glass-panel" style="margin: 20px; border-radius: 12px;">
+        <div class="logo-container">
+            <h1>🧪 ChemLab Quiz Pro</h1>
+        </div>
+        <div class="controls">
+            <button id="theme-toggle" title="Toggle Dark/Light Mode">🌙</button>
+            <button id="fullscreen-toggle" title="Toggle Fullscreen">⛶</button>
+            <button title="Admin Panel" onclick="window.location.href='admin.html'">⚙️</button>
+            <button title="Back to Lab" onclick="window.location.href='index.html'">🏠</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view" class="fade-in">
+            <div class="dashboard-grid">
+                <div class="glass-panel stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <h3>Quizzes Attempted</h3>
+                        <p id="stat-quizzes">0</p>
+                    </div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-info">
+                        <h3>Highest Score</h3>
+                        <p id="stat-score">0%</p>
+                    </div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3>Accuracy</h3>
+                        <p id="stat-accuracy">0%</p>
+                    </div>
+                </div>
+                <div class="glass-panel stat-card" style="border: 2px solid var(--primary);">
+                    <div class="stat-icon">🏅</div>
+                    <div class="stat-info">
+                        <h3>Current Level</h3>
+                        <p id="stat-level" style="color: var(--primary);">Lv. 1 (0 XP)</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-bottom: 20px;">Your Achievements</h2>
+            <div id="achievements-container" class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <!-- Achievements injected here -->
+            </div>
+
+            <h2 style="margin-bottom: 20px; margin-top: 40px;">Select a Topic</h2>
+            <div id="topics-container" class="topics-container">
+                <!-- Topics injected here -->
+            </div>
+        </div>
+
+        <!-- ACTIVE QUIZ VIEW -->
+        <div id="quiz-view" class="hidden fade-in">
+            <div class="glass-panel">
+                <div class="quiz-header">
+                    <span id="question-counter" style="font-weight: bold; color: var(--text-muted);">Question 1 of 20</span>
+                    <span id="timer-display" class="timer">15:00</span>
+                </div>
+                <div class="progress-bar-container" style="margin-top: 0; margin-bottom: 30px; height: 10px;">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+
+                <div class="question-container">
+                    <h2 id="question-text" class="question-text">Loading question...</h2>
+                    <div id="options-container" class="options-grid">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+
+                <div class="quiz-footer">
+                    <div>
+                        <button id="prev-btn" class="btn btn-secondary">Previous</button>
+                        <button id="next-btn" class="btn btn-primary" style="margin-left: 10px;">Next</button>
+                    </div>
+                    <div>
+                        <button id="submit-btn" class="btn btn-primary" style="background: var(--success); display: none;">Submit Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVIEW VIEW -->
+        <div id="review-view" class="hidden fade-in">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Quiz Review</h2>
+                <button class="btn btn-primary" onclick="closeReview()">Back to Dashboard</button>
+            </div>
+            <div id="review-content">
+                <!-- Review elements injected here -->
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="closeReview()">Back to Dashboard</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DIFFICULTY MODAL -->
+    <div id="difficulty-modal" class="modal-overlay">
+        <div class="glass-panel modal-content">
+            <h2 id="modal-topic-title" style="margin-bottom: 20px;">Topic Name</h2>
+            <p style="margin-bottom: 20px; color: var(--text-muted);">Select Difficulty</p>
+
+            <button id="btn-start-easy" class="difficulty-btn btn-easy" onclick="handleDifficultySelect('Easy')">Easy - 15m</button>
+            <button id="btn-start-medium" class="difficulty-btn btn-medium" onclick="handleDifficultySelect('Medium')">Medium - 20m</button>
+            <button id="btn-start-hard" class="difficulty-btn btn-hard" onclick="handleDifficultySelect('Hard')">Hard - 30m</button>
+
+            <button class="btn btn-secondary" style="margin-top: 20px; width: 100%;" onclick="closeDifficultyModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- RESULTS MODAL -->
+    <div id="results-modal" class="modal-overlay">
+        <div class="glass-panel modal-content" id="results-content">
+            <!-- Dynamically populated by showResults -->
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data/questions.js"></script>
+    <script src="js/data/achievements.js"></script>
+    <script src="js/quiz_engine.js"></script>
+
+    <script>
+        // Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            themeBtn.textContent = isDark ? '🌙' : '☀️';
+        });
+
+        // Fullscreen Toggle
+        const fsBtn = document.getElementById('fullscreen-toggle');
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
